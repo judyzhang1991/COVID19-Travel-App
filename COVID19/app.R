@@ -69,7 +69,8 @@ ui <- fluidPage(
                   max = as.Date(max(covid19_map_dat$date), 
                                 "%Y-%m-%d"), 
                   value = as.Date(max(covid19_map_dat$date)),
-                  timeFormat = "%Y-%m-%d")
+                  timeFormat = "%Y-%m-%d",
+                  animate = TRUE)
     ),
     
     mainPanel(plotOutput("map"))

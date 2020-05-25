@@ -1,0 +1,20 @@
+1. COVID19 Data
+
+https://towardsdatascience.com/top-5-r-resources-on-covid-19-coronavirus-1d4c8df6d85f
+
+{COVID19} package
+
+
+2. Map Data
+
+{map} package
+
+3. Colors: https://ourworldindata.org/smoking
+(small to large) RColorBrewer palettes
+Confirmed:YlOrRd
+
+Recovered:YlGnBu
+
+Deaths: Greys
+
+No Data: #762A83 (Purple)

@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1590364708979.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2159944945",
+    "id" : "CFF0575E",
+    "lastKnownWriteTime" : 1590367869,
+    "last_content_update" : 1590367869490,
+    "path" : "~/Academics/2019-2020/NU Spring2020/COVID19 Project/COVID19/helpers.R",
+    "project_path" : "helpers.R",
+    "properties" : {
+        "cursorPosition" : "28,1",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

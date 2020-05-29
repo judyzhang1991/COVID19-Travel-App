@@ -9,47 +9,65 @@ library(RColorBrewer)
 
 library(sf)
 
-library(COVID19)
+library(janitor)
+
+library(readr)
+
+library(viridis)
+
+library(lubridate)
+
+library(glue)
 
 # Load data ----
 
-## Global COVID19 Data
-covid19_dat <- covid19() %>%
-  
-  select(id,
-         date, 
-         confirmed, 
-         recovered, 
-         deaths, 
-         administrative_area_level_1) %>%
-  
-  mutate(
-    confirmed_rate = confirmed / 100000,
-    recovered_rate = recovered / 100000,
-    deaths_rate = deaths / 100000,
-    ID = administrative_area_level_1
-  ) 
+### COVID 19 DATA ###
+## The data sets are pulled from Johns Hopkins University
+## CSSE COVID19 github repository
+##
+## File Name: time_series_covid19_confirmed_global.csv
+## File Name:  time_series_covid19_deaths_global.csv
+## File Name:  time_series_covid19_recovered_global.csv
+
+confirmed_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")) %>%
+  clean_names()
 
 
-## Global Map Data
+deaths_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv")) %>%
+  clean_names()
+
+
+recovered_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"))%>%
+  clean_names()
+
+dat_dates <- as.Date(str_replace(names(confirmed_dat[, -c(1:4)]), "x", ""), "%m_%d_%y")
+
+
+  
+### MAP DATA ###
+
 map_dat <- maps::map(
   database = "world",
   plot = FALSE,
   fill = TRUE
-) %>%
-  st_as_sf()
+)
 
 
-# Merge COVID19 data and map data
-covid19_map_dat <- left_join(covid19_dat, map_dat, by = "ID")
-
-
+# Cutoffs based on the number of cases
+val_breaks <- c(1, 20 , 100, 1000, 50000)
 
 # Source helper functions -----
 source("helpers.R")
 
 # User interface ----
 ui <- fluidPage(
+  
+  # Override CSS
+  tags$style(type = 'text/css',
+             ".irs-grid-text {font-size: 10pt;}"),
+  
+
+
   titlePanel("COVID 19 Visualization Project"),
   
   sidebarLayout(
@@ -63,13 +81,11 @@ ui <- fluidPage(
                   selected = "Confirmed Cases"),
       
       sliderInput("date", 
-                  label = "Range of interest:",
-                  min = as.Date(min(covid19_map_dat$date), 
-                                "%Y-%m-%d"), 
-                  max = as.Date(max(covid19_map_dat$date), 
-                                "%Y-%m-%d"), 
-                  value = as.Date(max(covid19_map_dat$date)),
-                  timeFormat = "%Y-%m-%d",
+                  label = "Date of interest:",
+                  min = as.Date(dat_dates[1]), 
+                  max = as.Date(dat_dates[length(dat_dates)]), 
+                  value = as.Date(dat_dates[1]),
+                  timeFormat = "%m-%d-%y",
                   animate = TRUE)
     ),
     
@@ -79,16 +95,22 @@ ui <- fluidPage(
 
 # Server logic ----
 server <- function(input, output) {
+  
   output$map <- renderPlot({
     
-    args <- switch(input$var, 
-                   "Confirmed Cases" = list("confirmed", "YlOrRd", "Confirmed Cases Per\n100,000 People"),
-                   "Recovered Cases" = list("recovered", "YlGnBu", "Recovered Cases Per\n100,000 People"),
-                   "Deaths Cases" = list("deaths", "Greys", "Deaths Cases Per\n100,000 People"))
+    dat <- switch(input$var, 
+                   "Confirmed Cases" = confirmed_dat,
+                   "Recovered Cases" = recovered_dat,
+                   "Deaths Cases" = deaths_dat)
     
+    legend_title <- switch(input$var,
+                    "Confirmed Cases" = "Confirmed cases\n per 100,000 people",
+                    "Recovered Cases" = "Recovered cases\n per 100,000 people",
+                    "Deaths Cases" = "Deaths cases\n per 100,000 people")
+
    
-  
-    covid_map(covid19_map_dat, unlist(args[1]), unlist(args[2]), unlist(args[3]), input$date)
+    
+    covid_map(dat, legend_title)
     
   })
 }

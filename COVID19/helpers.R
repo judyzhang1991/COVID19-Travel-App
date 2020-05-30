@@ -8,7 +8,46 @@
 
 
 
-# Helper Function: covid19_map ----
+### MAP DATA ###
+
+map_dat <- maps::map(
+  database = "world",
+  plot = FALSE,
+  fill = TRUE
+)
+
+
+# Cutoffs based on the number of cases
+val_breaks <- c(1, 20 , 100, 1000, 50000)
+
+
+# Helper Function: get country outlines
+
+# Get outline data for a given state
+get_country_outline <- function(){
+  states_outline <- maps::map(
+    database = "state",
+    plot = FALSE,
+    fill = TRUE
+  ) %>%
+    st_as_sf() 
+  
+  if(grepl(",", state_input, fixed = TRUE)){
+    return(states_outline)
+  }
+  else{
+    states_outline <- subset(states_outline, 
+                             ID == tolower(state_input))
+    return(states_outline)
+  }
+  
+  
+}
+
+
+
+
+# Helper Function: map covid 19 data ----
 ## args:
 ## dat: dataset to map (confirmed cases, deaths cases, recovered cases)
 ## color: color of the data points (confirmed, deaths, recovered)
@@ -17,8 +56,21 @@
 ## start: starting date
 ## end: ending date
 
-covid_map <- function(dat, legend_title) {
+covid_map <- function(dat, legend_title, date) {
+  
+  # Manipulate input date to get corresponding column
 
+  ymd <- str_split(gsub(" 0", " ", format(as.Date(date), "%Y, %m, %d")), ", ", simplify = TRUE)
+
+  y <- substr(ymd[,1], 3, 4)
+  
+  m <- ymd[,2]
+  
+  d <- ymd[,3]
+  
+  date_col <- paste("x", paste(paste(m, d, sep = "_"), y, sep = "_"), sep = "")
+  print(nrow(dat))
+  
   ggplot() + 
     geom_polygon(data = map_dat, 
                  aes(x = long, 
@@ -28,10 +80,9 @@ covid_map <- function(dat, legend_title) {
                  alpha = 0.3) + 
     
     geom_point(data = dat, 
-               aes(x = long, 
-                   y = lat, 
-                   #size = x3_3_20, 
-                   color = x3_3_20), 
+               aes(x = longitude, 
+                   y = latitude, 
+                   color = dat[[date_col]]), 
                size = 5,
                stroke = F,
                alpha = 0.7) + 

@@ -5,9 +5,7 @@ library(shiny)
 
 library(tidyverse)
 
-library(RColorBrewer)
-
-library(sf)
+library(maps)
 
 library(janitor)
 
@@ -15,9 +13,6 @@ library(readr)
 
 library(viridis)
 
-library(lubridate)
-
-library(glue)
 
 # Load data ----
 
@@ -30,41 +25,65 @@ library(glue)
 ## File Name:  time_series_covid19_recovered_global.csv
 
 confirmed_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")) %>%
-  clean_names()
+  clean_names() %>%
+  mutate(
+    country_region = tolower(country_region)
+  )
 
 
 deaths_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv")) %>%
-  clean_names()
+  clean_names() %>%
+  mutate(
+    country_region = tolower(country_region)
+  )
 
 
 recovered_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"))%>%
-  clean_names()
+  clean_names() %>%
+  mutate(
+    country_region = tolower(country_region)
+  )
 
 dat_dates <- as.Date(str_replace(names(confirmed_dat[, -c(1:4)]), "x", ""), "%m_%d_%y")
 
 
-  
-### MAP DATA ###
+## Aggregate by country 
+confirmed_agg <- confirmed_dat %>%
+  group_by(country_region) %>%
+  summarise_at(vars(starts_with('x')), sum)
 
-map_dat <- maps::map(
-  database = "world",
-  plot = FALSE,
-  fill = TRUE
-)
+recovered_agg <- recovered_dat %>%
+  group_by(country_region) %>%
+  summarise_at(vars(starts_with('x')), sum)
 
 
-# Cutoffs based on the number of cases
-val_breaks <- c(1, 20 , 100, 1000, 50000)
+deaths_agg <- deaths_dat %>%
+  group_by(country_region) %>%
+  summarise_at(vars(starts_with('x')), sum)
+
+## Country Centroid Data
+## The data set is downloaded 
+## from https://worldmap.harvard.edu/data/geonode:country_centroids_az8
+## on May 29th, 2020
+
+country_cent <- read_csv("data/country_centroids_az8.csv") %>%
+  clean_names() %>%
+  select(name_long, longitude, latitude) %>%
+  mutate(country_region = tolower(name_long))
+
+
+
+## Joing country centroid and COVID 19 data
+
+confirmed_geodat <- left_join(confirmed_agg, 
+                              country_cent, 
+                              by = "country_region")
 
 # Source helper functions -----
 source("helpers.R")
 
 # User interface ----
 ui <- fluidPage(
-  
-  # Override CSS
-  tags$style(type = 'text/css',
-             ".irs-grid-text {font-size: 10pt;}"),
   
 
 
@@ -99,9 +118,9 @@ server <- function(input, output) {
   output$map <- renderPlot({
     
     dat <- switch(input$var, 
-                   "Confirmed Cases" = confirmed_dat,
-                   "Recovered Cases" = recovered_dat,
-                   "Deaths Cases" = deaths_dat)
+                   "Confirmed Cases" = confirmed_geodat,
+                   "Recovered Cases" = recovered_geodat,
+                   "Deaths Cases" = deaths_geodat)
     
     legend_title <- switch(input$var,
                     "Confirmed Cases" = "Confirmed cases\n per 100,000 people",
@@ -110,7 +129,7 @@ server <- function(input, output) {
 
    
     
-    covid_map(dat, legend_title)
+    covid_map(dat, legend_title, input$date)
     
   })
 }

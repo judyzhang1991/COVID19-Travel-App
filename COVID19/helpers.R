@@ -1,48 +1,42 @@
-## STAT302 Data Visualization
-##
-## Final Project
-##
-## Jingyang Zhang
-##
-## May 22, 2020
-
-
-
-### MAP DATA ###
-
-map_dat <- maps::map(
-  database = "world",
-  plot = FALSE,
-  fill = TRUE
-)
+## STAT302 ##
+## Final Project ##
+## Jingyang Zhang ##
+## May 20th, 2020 ##
+## helpers.R ##
 
 
 # Cutoffs based on the number of cases
 val_breaks <- c(1, 20 , 100, 1000, 50000)
 
 
-# Helper Function: get country outlines
+# Helper Function: clean covid data, group by country region and make it tidy ----
+## args:
+## dat: dataset (confirmed cases, deaths cases, recovered cases)
+## return:
+## dat: cleaned covid data set
 
-# Get outline data for a given state
-get_country_outline <- function(){
-  states_outline <- maps::map(
-    database = "state",
-    plot = FALSE,
-    fill = TRUE
-  ) %>%
-    st_as_sf() 
-  
-  if(grepl(",", state_input, fixed = TRUE)){
-    return(states_outline)
-  }
-  else{
-    states_outline <- subset(states_outline, 
-                             ID == tolower(state_input))
-    return(states_outline)
-  }
-  
-  
+clean_coviddat <- function(dat){
+  dat <- dat %>% 
+    clean_names() %>%
+    group_by(country_region) %>%
+    summarise_at(vars(starts_with('x')), sum) %>%
+    pivot_longer(cols = -country_region,
+                 names_to = "date",
+                 values_to = "cases") %>%
+    # Remove "x" from date, change date format to %d-%m-%y
+    mutate(
+      date = str_replace_all(str_replace(date, "x", ""), "_", "-"),
+      country_region = tolower(country_region),
+      categ = case_when(
+        cases >= 0 & cases <= 19 ~ "0-19",
+        cases >= 20 & cases <= 99 ~ "20-99",
+        cases >= 100 & cases <= 999 ~ "100-999",
+        cases >= 1000 & cases <= 49999 ~ "1000-49,999",
+        cases >= 50000 ~ "50,000+"
+      )
+    )
 }
+
 
 
 
@@ -56,64 +50,57 @@ get_country_outline <- function(){
 ## start: starting date
 ## end: ending date
 
-covid_map <- function(dat, legend_title, date) {
-  
-  # Manipulate input date to get corresponding column
+covid_map <- function(dat, date_input, legend_title, color) {
+      
+        
+      
+      ## Filter date to find the given date
+      plot_dat <- dat[dat$date == date_input, ]
+      
+      plot_dat$categ = factor(plot_dat$categ, 
+                              levels = c("0-19",
+                                         "20-99",
+                                         "100-999",
+                                         "1000-49,999",
+                                         "50,000+"))
 
-  ymd <- str_split(gsub(" 0", " ", format(as.Date(date), "%Y, %m, %d")), ", ", simplify = TRUE)
-
-  y <- substr(ymd[,1], 3, 4)
-  
-  m <- ymd[,2]
-  
-  d <- ymd[,3]
-  
-  date_col <- paste("x", paste(paste(m, d, sep = "_"), y, sep = "_"), sep = "")
-  print(nrow(dat))
-  
-  ggplot() + 
-    geom_polygon(data = map_dat, 
-                 aes(x = long, 
-                     y = lat, 
-                     group = group),
-                 fill = "grey",
-                 alpha = 0.3) + 
-    
-    geom_point(data = dat, 
-               aes(x = longitude, 
-                   y = latitude, 
-                   color = dat[[date_col]]), 
-               size = 5,
-               stroke = F,
-               alpha = 0.7) + 
-    #scale_size_continuous(name=legend_title, 
-                      #    trans="log", 
-                      #    range=c(1,7),
-                      #   breaks=val_breaks, 
-                      #    labels = c("1-19", 
-                                  #   "20-99", 
-                                  #   "100-999", 
-                                  #  "1,000-49,999", 
-                                  #  "50,000+")) +
-   
-    scale_color_viridis_c(option="inferno",
-                          name=legend_title, 
-                          trans="log",
-                          breaks=val_breaks, 
-                          labels = c("1-19", 
-                                     "20-99", 
-                                     "100-999", 
-                                     "1,000-49,999", 
-                                     "50,000+")) +
-    theme_void() + 
-    guides( colour = guide_legend()) +
-    labs(caption = "Data Repository provided by Johns Hopkins CSSE.") +
-    theme(
-      legend.position = "bottom",
-      text = element_text(color = "#22211d"),
-      plot.background = element_rect(fill = "#ffffff", color = NA), 
-      panel.background = element_rect(fill = "#ffffff", color = NA), 
-      legend.background = element_rect(fill = "#ffffff", color = NA)
-    )
-    
+      ggplot(plot_dat) + 
+        geom_sf(aes(fill = categ, 
+                    geometry = geom),
+                color = "white",
+                show.legend = "polygon") + 
+        
+        scale_fill_manual(name = legend_title,
+                          values = color) +
+        theme_minimal() + 
+        
+        labs(caption = "Data Repository provided by Johns Hopkins CSSE.") +
+        
+        theme(
+          ### Plot ###
+          plot.background = element_rect(fill = "#ffffff", color = NA),
+          
+          ### Panel ###
+          panel.background = element_rect(fill = "#ffffff", color = NA),
+          
+          panel.grid = element_blank(),
+          
+          ### Axis ###
+          axis.text = element_blank(),
+          
+          ### Legend ###
+          legend.position = "bottom",
+          
+          legend.background = element_rect(fill = "#ffffff", color = NA),
+          
+          ### Text ###
+          text = element_text(color = "#22211d"),
+           
+        )
+        
+        
 }
+
+
+
+

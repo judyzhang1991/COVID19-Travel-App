@@ -1,17 +1,23 @@
+## STAT302 ##
+## Final Project ##
+## Jingyang Zhang ##
+## May 20th, 2020 ##
+## app.R ##
+
 
 # Load packages ----
 
 library(shiny)
 
-library(tidyverse)
-
 library(maps)
+
+library(tidyverse)
 
 library(janitor)
 
-library(readr)
+library(sf)
 
-library(viridis)
+
 
 
 # Load data ----
@@ -24,86 +30,64 @@ library(viridis)
 ## File Name:  time_series_covid19_deaths_global.csv
 ## File Name:  time_series_covid19_recovered_global.csv
 
+# Confirmed cases are aggregated by country
 confirmed_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")) %>%
-  clean_names() %>%
-  mutate(
-    country_region = tolower(country_region)
-  )
-
+  clean_coviddat()
+      
 
 deaths_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv")) %>%
-  clean_names() %>%
+  clean_coviddat()
+  
+
+recovered_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv")) %>%
+  clean_coviddat()
+
+
+### MAP DATA ###
+## The data sets are pulled package {maps}
+##
+  
+map_dat <- maps::map(
+  database = "world",
+  plot = FALSE,
+  fill = TRUE
+  ) %>%
+  st_as_sf() %>%
   mutate(
-    country_region = tolower(country_region)
+    country_region = tolower(ID)
   )
 
 
-recovered_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"))%>%
-  clean_names() %>%
-  mutate(
-    country_region = tolower(country_region)
-  )
+confirmed_geo <- left_join(confirmed_dat, map_dat, by = "country_region")
 
-dat_dates <- as.Date(str_replace(names(confirmed_dat[, -c(1:4)]), "x", ""), "%m_%d_%y")
+recovered_geo <- left_join(recovered_dat, map_dat, by = "country_region") 
+  
+deaths_geo <- left_join(deaths_dat, map_dat, by = "country_region") 
 
-
-## Aggregate by country 
-confirmed_agg <- confirmed_dat %>%
-  group_by(country_region) %>%
-  summarise_at(vars(starts_with('x')), sum)
-
-recovered_agg <- recovered_dat %>%
-  group_by(country_region) %>%
-  summarise_at(vars(starts_with('x')), sum)
-
-
-deaths_agg <- deaths_dat %>%
-  group_by(country_region) %>%
-  summarise_at(vars(starts_with('x')), sum)
-
-## Country Centroid Data
-## The data set is downloaded 
-## from https://worldmap.harvard.edu/data/geonode:country_centroids_az8
-## on May 29th, 2020
-
-country_cent <- read_csv("data/country_centroids_az8.csv") %>%
-  clean_names() %>%
-  select(name_long, longitude, latitude) %>%
-  mutate(country_region = tolower(name_long))
-
-
-
-## Joing country centroid and COVID 19 data
-
-confirmed_geodat <- left_join(confirmed_agg, 
-                              country_cent, 
-                              by = "country_region")
 
 # Source helper functions -----
 source("helpers.R")
 
 # User interface ----
 ui <- fluidPage(
-  
-
-
-  titlePanel("COVID 19 Visualization Project"),
+  titlePanel("Covid 19 Data Visualization"),
   
   sidebarLayout(
     sidebarPanel(
-      
+  
+      # Dropdown widget so user can select a state or us map
       selectInput("var", 
-                  label = "Choose a variable to display",
+                  label = "Select display cases:",
                   choices = c("Confirmed Cases", 
-                              "Recovered Cases",
+                              "Recovered Cases", 
                               "Deaths Cases"),
                   selected = "Confirmed Cases"),
       
       sliderInput("date", 
                   label = "Date of interest:",
-                  min = as.Date(dat_dates[1]), 
-                  max = as.Date(dat_dates[length(dat_dates)]), 
-                  value = as.Date(dat_dates[1]),
+                  min = as.Date(confirmed_geo$date[1], "%m-%d-%y"), 
+                  max = as.Date(confirmed_geo$date[nrow(confirmed_geo)], "%m-%d-%y"), 
+                  value = as.Date(confirmed_geo$date[nrow(confirmed_geo)], "%m-%d-%y"),
                   timeFormat = "%m-%d-%y",
                   animate = TRUE)
     ),
@@ -114,22 +98,47 @@ ui <- fluidPage(
 
 # Server logic ----
 server <- function(input, output) {
-  
   output$map <- renderPlot({
     
-    dat <- switch(input$var, 
-                   "Confirmed Cases" = confirmed_geodat,
-                   "Recovered Cases" = recovered_geodat,
-                   "Deaths Cases" = deaths_geodat)
     
-    legend_title <- switch(input$var,
-                    "Confirmed Cases" = "Confirmed cases\n per 100,000 people",
-                    "Recovered Cases" = "Recovered cases\n per 100,000 people",
-                    "Deaths Cases" = "Deaths cases\n per 100,000 people")
+    mdy_list <- str_split(gsub(" 0", " ", format(as.Date(input$date), "%Y, %m, %d")), ", ")
+    y <- substr(mdy_list[[1]][1], start = 3, stop = 4)
+    m <- mdy_list[[1]][2]
+    d <- mdy_list[[1]][3]
+    
+    mdy <- paste(paste(m, d, sep = "-"), y, sep = "-")
+    
+    
+    dat <- switch(input$var, 
+                   "Confirmed Cases" = confirmed_geo,
+                   "Recovered Cases" = recovered_geo,
+                   "Deaths Cases" = deaths_geo)
+    
+    color <- switch(input$var,
+                    "Confirmed Cases" = c(
+                      "0-19" = "#FFFFB2",
+                      "20-99" = "#FED976",
+                      "100-999" = "#FD8D3C",
+                      "1000-49,999" = "#F03B20",
+                      "50,000+" = "#BD0026"),
+                    
+                    "Recovered Cases" = c(
+                      "0-19" = "#F0F9E8",
+                      "20-99" = "#BAE4BC",
+                      "100-999" = "#7BCCC4",
+                      "1000-49,999" = "#43A2CA",
+                      "50,000+" = "#0868AC"),
+                    
+                    "Deaths Cases" = c(
+                      "0-19" = "#F8F8F8",
+                      "20-99" = "#C0C0C0",
+                      "100-999" = "#989898",
+                      "1000-49,999" = "#585858",
+                      "50,000+" = "#000000"))
 
    
+    covid_map(dat, mdy, input$var, color)
     
-    covid_map(dat, legend_title, input$date)
     
   })
 }

@@ -64,24 +64,28 @@ covid_map <- function(dat, date_input, legend_title, color) {
                                          "1000-49,999",
                                          "50,000+"))
 
-      ggplot(plot_dat) + 
+      ggplot(plot_dat) +
+        
         geom_sf(aes(fill = categ, 
                     geometry = geom),
                 color = "white",
                 show.legend = "polygon") + 
         
         scale_fill_manual(name = legend_title,
-                          values = color) +
+                          values = color,
+                          na.value = "#6d5b6f") +
         theme_minimal() + 
         
         labs(caption = "Data Repository provided by Johns Hopkins CSSE.") +
         
         theme(
           ### Plot ###
-          plot.background = element_rect(fill = "#ffffff", color = NA),
+          plot.background = element_rect(fill = "#ffffff", 
+                                         color = NA),
           
           ### Panel ###
-          panel.background = element_rect(fill = "#ffffff", color = NA),
+          panel.background = element_rect(fill = "#ffffff", 
+                                          color = NA),
           
           panel.grid = element_blank(),
           
@@ -91,7 +95,8 @@ covid_map <- function(dat, date_input, legend_title, color) {
           ### Legend ###
           legend.position = "bottom",
           
-          legend.background = element_rect(fill = "#ffffff", color = NA),
+          legend.background = element_rect(fill = "#ffffff", 
+                                           color = NA),
           
           ### Text ###
           text = element_text(color = "#22211d"),

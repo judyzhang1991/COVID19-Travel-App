@@ -35,14 +35,17 @@ source("helpers.R")
 # Confirmed cases are aggregated by country
 confirmed_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")) %>%
   clean_coviddat()
+
+
+recovered_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv")) %>%
+  clean_coviddat()
       
 
 deaths_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv")) %>%
   clean_coviddat()
   
 
-recovered_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv")) %>%
-  clean_coviddat()
+
 
 
 ### MAP DATA ###
@@ -60,11 +63,130 @@ map_dat <- maps::map(
   )
 
 
-confirmed_geo <- left_join(confirmed_dat, map_dat, by = "country_region")
 
-recovered_geo <- left_join(recovered_dat, map_dat, by = "country_region") 
+## Compare country names in the COVID19 datasets and the map dataset
+#diff <- data.frame(unique(confirmed_dat[!confirmed_dat$country_region%in%map_dat$country_region,]$country_region))
+
+#map_country <- data.frame(map_dat$country_region)
+### 20 unmatched countries in COVID19 dataset that are NOT in the map dataset
+
+#1. COVID 19: antigua and barbuda   
+## Map: antigua; barbuda
+map_dat$country_region[tolower(map_dat$country_region) == "antigua"] <- "antigua and barbuda"
+map_dat$country_region[tolower(map_dat$country_region) == "barbuda"] <- "antigua and barbuda"
+
+##2. COVID19: burma
+## Map: myanmar
+map_dat$country_region[tolower(map_dat$country_region) == "myanmar"] <- "burma"
+
+
+
+#3. COVID19: cabo verde  
+## Map: cape verde
+map_dat$country_region[tolower(map_dat$country_region) == "cape verde"] <- "cabo verde"
+
+
+
+#4. COVID19: congo (brazzaville)  
+## Map: republic of congo
+map_dat$country_region[tolower(map_dat$country_region) == "republic of congo"] <- "congo (brazzaville)"
+
+
+#5. COVID19: congo (kinshasa)   
+## Map: democratic republic of congo
+
+map_dat$country_region[tolower(map_dat$country_region) == "democratic republic of congo"] <- "congo (kinshasa)"
+
+
+#6. COVID19: cote d'ivoire
+## Map: ivory coast
+map_dat$country_region[tolower(map_dat$country_region) == "ivory coast"] <- "cote d'ivoire"
+
+
+
+#7. COVID19: czechia
+# Map: czech republic
+map_dat$country_region[tolower(map_dat$country_region) == "czech republic"] <- "czechia"
+
+
+#8. COVID19: diamond princess
+# Map: NONE
+# Not going to be mapped as it is not a country
+
+#9. COVID19: eswatini
+# Map: swaziland
+map_dat$country_region[tolower(map_dat$country_region) == "swaziland"] <- "eswatini"
+
+#10. COVID19: holy see
+# Map: No Match
+
+
+#11. COVID19: korea, south
+## Map: south korea
+map_dat$country_region[tolower(map_dat$country_region) == "south korea"] <- "korea, south"
+
+
+#12. COVID19: ms zaandam
+## Map: NONE
+# Not going to be mapped as it is not a country
+
+#13. COVID19: north macedonia
+## Map: macedonia
+map_dat$country_region[tolower(map_dat$country_region) == "macedonia"] <- "north macedonia"
+
+#14. COVID19: saint kitts and nevis
+## Map: saint kitts; nevis
+
+map_dat$country_region[tolower(map_dat$country_region) == "saint kitts"] <- "saint kitts and nevis"
+map_dat$country_region[tolower(map_dat$country_region) == "nevis"] <- "saint kitts and nevis"
+
+
+#15. COVID19: saint vincent and the grenadines
+## Map: saint vincent; grenadines
+
+map_dat$country_region[tolower(map_dat$country_region) == "saint vincent"] <- "saint vincent and the grenadines"
+map_dat$country_region[tolower(map_dat$country_region) == "grenadines"] <- "saint vincent and the grenadines"
+
+
+#16. COVID19: taiwan*
+## Map: taiwan
+
+map_dat$country_region[tolower(map_dat$country_region) == "taiwan"] <- "taiwan*"
+
+
+
+#17. COVID19: trinidad and tobago
+## Map: trinidad; tobago
+
+map_dat$country_region[tolower(map_dat$country_region) == "trinidad"] <- "trinidad and tobago"
+
+map_dat$country_region[tolower(map_dat$country_region) == "tobago"] <- "trinidad and tobago"
+
+
+#18. COVID19: united kingdom
+## Map: uk
+
+map_dat$country_region[tolower(map_dat$country_region) == "uk"] <- "united kingdom"
+
+#19. COVID19: us
+## Map: usa
+
+map_dat$country_region[tolower(map_dat$country_region) == "usa"] <- "us"
+
+#20. COVID19: west bank and gaza (no palestine in the dataset)
+## Map: palestine
+
+map_dat$country_region[tolower(map_dat$country_region) == "palestine"] <- "west bank and gaza"
+
+
+
+
+confirmed_geo <- left_join(map_dat, confirmed_dat, by = "country_region")
+
+
+recovered_geo <- left_join(map_dat, recovered_dat, by = "country_region") 
   
-deaths_geo <- left_join(deaths_dat, map_dat, by = "country_region") 
+deaths_geo <- left_join(map_dat, deaths_dat, by = "country_region") 
 
 
 
@@ -86,9 +208,9 @@ ui <- fluidPage(
       
       sliderInput("date", 
                   label = "Date of interest:",
-                  min = as.Date(confirmed_geo$date[1], "%m-%d-%y"), 
-                  max = as.Date(confirmed_geo$date[nrow(confirmed_geo)], "%m-%d-%y"), 
-                  value = as.Date(confirmed_geo$date[nrow(confirmed_geo)], "%m-%d-%y"),
+                  min = as.Date(confirmed_dat$date[1], "%m-%d-%y"), 
+                  max = as.Date(confirmed_dat$date[nrow(confirmed_dat)], "%m-%d-%y"), 
+                  value = as.Date(confirmed_dat$date[nrow(confirmed_dat)], "%m-%d-%y"),
                   timeFormat = "%m-%d-%y",
                   animate = TRUE)
     ),

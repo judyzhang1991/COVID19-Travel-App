@@ -18,6 +18,8 @@ library(janitor)
 library(sf)
 
 
+# Source helper functions -----
+source("helpers.R")
 
 
 # Load data ----
@@ -65,8 +67,7 @@ recovered_geo <- left_join(recovered_dat, map_dat, by = "country_region")
 deaths_geo <- left_join(deaths_dat, map_dat, by = "country_region") 
 
 
-# Source helper functions -----
-source("helpers.R")
+
 
 # User interface ----
 ui <- fluidPage(
@@ -92,12 +93,23 @@ ui <- fluidPage(
                   animate = TRUE)
     ),
     
-    mainPanel(plotOutput("map"))
+    mainPanel(
+      
+      tabsetPanel(type = "tabs",
+                  tabPanel("Map", plotOutput("map")),
+                  tabPanel("Memo", textOutput("datasource"))
+                  )
+      
+              
+              
+    )
   )
 )
 
 # Server logic ----
 server <- function(input, output) {
+  
+  ## Map output
   output$map <- renderPlot({
     
     
@@ -140,6 +152,13 @@ server <- function(input, output) {
     covid_map(dat, mdy, input$var, color)
     
     
+  })
+  
+  
+  ## Memo output
+  
+  output$datasource <- renderText({
+    "Datasets used in this project come from Johns Hopkins CSSE's github repository."
   })
 }
 

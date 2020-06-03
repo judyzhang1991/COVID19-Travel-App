@@ -25,7 +25,7 @@ clean_coviddat <- function(dat){
                  values_to = "cases") %>%
     # Remove "x" from date, change date format to %d-%m-%y
     mutate(
-      date = str_replace_all(str_replace(date, "x", ""), "_", "-"),
+      date = as.Date(str_replace_all(str_replace(date, "x", ""), "_", "-"), "%m-%d-%y"),
       country_region = tolower(country_region),
       categ = case_when(
         cases >= 0 & cases <= 19 ~ "0-19",
@@ -67,13 +67,13 @@ covid_map <- function(dat, date_input, legend_title, color) {
       ggplot(plot_dat) +
         
         geom_sf(aes(fill = categ, 
-                    geometry = geom),
-                color = "white",
+                    geometry = geom.y),
+                color = "darkgrey",
                 show.legend = "polygon") + 
         
         scale_fill_manual(name = legend_title,
                           values = color,
-                          na.value = "#6d5b6f") +
+                          na.value = "#EEEEEE") +
         theme_minimal() + 
         
         labs(caption = "Data Repository provided by Johns Hopkins CSSE.") +

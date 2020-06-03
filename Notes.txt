@@ -1,8 +1,6 @@
 1. COVID19 Data
 
-https://towardsdatascience.com/top-5-r-resources-on-covid-19-coronavirus-1d4c8df6d85f
-
-{COVID19} package
+Johns Hopkins github repo
 
 
 2. Map Data
@@ -10,11 +8,13 @@ https://towardsdatascience.com/top-5-r-resources-on-covid-19-coronavirus-1d4c8df
 {map} package
 
 3. Colors: https://ourworldindata.org/smoking
-(small to large) RColorBrewer palettes
-Confirmed:YlOrRd
 
-Recovered:YlGnBu
+4. Cutoffs
+https://datascienceplus.com/map-visualization-of-covid19-across-world/
 
-Deaths: Greys
+5. Theme
+https://datascienceplus.com/map-visualization-of-covid19-across-world/
 
-No Data: #762A83 (Purple)
+
+6. Country Data, Airports Data
+ourairports.com

@@ -18,6 +18,8 @@ library(janitor)
 library(sf)
 
 
+
+
 # Source helper functions -----
 source("helpers.R")
 
@@ -25,7 +27,7 @@ source("helpers.R")
 # Load data ----
 
 ### COVID 19 DATA ###
-## The data sets are pulled from Johns Hopkins University
+## The datasets are pulled from Johns Hopkins University
 ## CSSE COVID19 github repository
 ##
 ## File Name: time_series_covid19_confirmed_global.csv
@@ -49,7 +51,7 @@ deaths_dat <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COV
 
 
 ### MAP DATA ###
-## The data sets are pulled package {maps}
+## The dataset is pulled from the R package {maps}
 ##
   
 map_dat <- maps::map(
@@ -95,7 +97,7 @@ map_dat$country_region[tolower(map_dat$country_region) == "republic of congo"] <
 #5. COVID19: congo (kinshasa)   
 ## Map: democratic republic of congo
 
-map_dat$country_region[tolower(map_dat$country_region) == "democratic republic of congo"] <- "congo (kinshasa)"
+map_dat$country_region[tolower(map_dat$country_region) == "democratic republic of the congo"] <- "congo (kinshasa)"
 
 
 #6. COVID19: cote d'ivoire
@@ -178,17 +180,43 @@ map_dat$country_region[tolower(map_dat$country_region) == "usa"] <- "us"
 
 map_dat$country_region[tolower(map_dat$country_region) == "palestine"] <- "west bank and gaza"
 
+# 21. COVID19: denmark
+## Map: greenland, denmark
+#??????????????
 
 
 
-confirmed_geo <- left_join(map_dat, confirmed_dat, by = "country_region")
+map_dat <- map_dat %>% select(country_region, geom)
+
+## Joing COVID19 datasets and map dataset
+start_day = as.Date(confirmed_dat$date[1], "%m-%d-%y")
+end_day = as.Date(confirmed_dat$date[nrow(confirmed_dat)], "%m-%d-%y")
 
 
-recovered_geo <- left_join(map_dat, recovered_dat, by = "country_region") 
-  
-deaths_geo <- left_join(map_dat, deaths_dat, by = "country_region") 
+
+confirmed <- left_join(map_dat, confirmed_dat, by = "country_region") %>% 
+  complete(date = seq(start_day, end_day, by = "days"), nesting(country_region))
+
+no_coviddat <- anti_join(map_dat, confirmed_dat, by = "country_region")
+
+confirmed_geo <- left_join(confirmed, map_dat, by = "country_region") %>%
+  select(country_region, date, cases, categ, geom.y)
+
+start_day = as.Date(recovered_dat$date[1], "%m-%d-%y")
+end_day = as.Date(recovered_dat$date[nrow(confirmed_dat)], "%m-%d-%y")
 
 
+recovered <- left_join(map_dat, recovered_dat, by = "country_region") %>%
+  complete(date = seq(start_day, end_day, by = "days"), nesting(country_region))
+
+recovered_geo <- left_join(recovered, map_dat, by = "country_region") %>%
+  select(country_region, date, cases, categ, geom.y)
+
+deaths <- left_join(map_dat, deaths_dat, by = "country_region") %>%
+  complete(date = seq(start_day, end_day, by = "days"), nesting(country_region))
+
+deaths_geo <- left_join(deaths, map_dat, by = "country_region") %>%
+  select(country_region, date, cases, categ, geom.y)
 
 
 # User interface ----
@@ -218,8 +246,8 @@ ui <- fluidPage(
     mainPanel(
       
       tabsetPanel(type = "tabs",
-                  tabPanel("Map", plotOutput("map")),
-                  tabPanel("Memo", textOutput("datasource"))
+                  tabPanel("Map", plotOutput("map", width = "100%")),
+                  tabPanel("References", htmlOutput("datasource"), htmlOutput("colorref"), htmlOutput("others"))
                   )
       
               
@@ -235,13 +263,8 @@ server <- function(input, output) {
   output$map <- renderPlot({
     
     
-    mdy_list <- str_split(gsub(" 0", " ", format(as.Date(input$date), "%Y, %m, %d")), ", ")
-    y <- substr(mdy_list[[1]][1], start = 3, stop = 4)
-    m <- mdy_list[[1]][2]
-    d <- mdy_list[[1]][3]
     
-    mdy <- paste(paste(m, d, sep = "-"), y, sep = "-")
-    
+ 
     
     dat <- switch(input$var, 
                    "Confirmed Cases" = confirmed_geo,
@@ -257,30 +280,65 @@ server <- function(input, output) {
                       "50,000+" = "#BD0026"),
                     
                     "Recovered Cases" = c(
-                      "0-19" = "#F0F9E8",
-                      "20-99" = "#BAE4BC",
-                      "100-999" = "#7BCCC4",
-                      "1000-49,999" = "#43A2CA",
-                      "50,000+" = "#0868AC"),
+                      "0-19" = "#D9F0A3",
+                      "20-99" = "#ADDD8E",
+                      "100-999" = "#78C679",
+                      "1000-49,999" = "#238443",
+                      "50,000+" = "#005A32"),
                     
                     "Deaths Cases" = c(
-                      "0-19" = "#F8F8F8",
-                      "20-99" = "#C0C0C0",
-                      "100-999" = "#989898",
-                      "1000-49,999" = "#585858",
-                      "50,000+" = "#000000"))
+                      "0-19" = "#D0D1E6",
+                      "20-99" = "#A6BDDB",
+                      "100-999" = "#67A9CF",
+                      "1000-49,999" = "#1C9099",
+                      "50,000+" = "#016C59"))
 
    
-    covid_map(dat, mdy, input$var, color)
+    covid_map(dat, input$date, input$var, color)
     
     
-  })
+  },
+  height = 600, width = 800
+  )
   
   
   ## Memo output
   
-  output$datasource <- renderText({
-    "Datasets used in this project come from Johns Hopkins CSSE's github repository."
+  output$datasource <- renderUI({
+    HTML("<strong>Data Sources: </strong><br/>
+    
+             <p>1. COVID19 datasets used in this project come from Johns Hopkins CSSE's github repository: <br/>
+             
+              COVID 19 Data for Confirmed Cases: time_series_covid19_confirmed_global.csv <br/>
+    
+              COVID 19 Data for Recovered Cases: time_series_covid19_recovered_global.csv <br/>
+    
+              COVID 19 Data for Deaths Cases:  time_series_covid19_deaths_global.csv </p>
+              
+              <p>2.Map datasets used in this project come from the R package, {maps}.</p>")
+    
+    
+  })
+  
+  output$colorref <-renderUI({
+    HTML("<strong>Color References: </strong><br/>
+    
+    <p>1. Colors used in this project were inspired by colors used in the following graphics found in <a href = 'https://ourworldindata.org/smoking'>Our World in Data</a>: <br/>
+    
+    Colors for Confirmed Cases: Death Rate From Smoking <br/>
+    
+    Colors for Recovered Cases: Taxes as a Share of Cigarette Price <br/>
+    
+    Colors for Deaths Cases: Average Price of a Pack of Cigarettes</p>")
+  })
+  
+  
+  output$others <- renderUI({
+    HTML("<strong>Cutoff Values References: </strong><br/>
+    <p>1. Cutoff values used in this project were referenced to the values used in the example found in <a href = 'https://datascienceplus.com/map-visualization-of-covid19-across-world'>Data Science Plus: visualize COVID19 across world</a>.</p>
+    
+    <strong>Theme References: </strong><br/>
+    <p>1. Theme used in this project was referenced to the theme used in the example found in  <a href = 'https://datascienceplus.com/map-visualization-of-covid19-across-world'>Data Science Plus: visualize COVID19 across world</a>.</p>")
   })
 }
 

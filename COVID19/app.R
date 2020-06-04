@@ -180,43 +180,40 @@ map_dat$country_region[tolower(map_dat$country_region) == "usa"] <- "us"
 
 map_dat$country_region[tolower(map_dat$country_region) == "palestine"] <- "west bank and gaza"
 
-# 21. COVID19: denmark
-## Map: greenland, denmark
-#??????????????
 
 
 
-map_dat <- map_dat %>% select(country_region, geom)
 
 ## Joing COVID19 datasets and map dataset
 start_day = as.Date(confirmed_dat$date[1], "%m-%d-%y")
 end_day = as.Date(confirmed_dat$date[nrow(confirmed_dat)], "%m-%d-%y")
 
+#no_coviddat <- anti_join(map_dat, confirmed_dat, by = "country_region")
+
 
 
 confirmed <- left_join(map_dat, confirmed_dat, by = "country_region") %>% 
-  complete(date = seq(start_day, end_day, by = "days"), nesting(country_region))
+  complete(date = seq(start_day, end_day, by = "days"), nesting(country_region, ID))
 
-no_coviddat <- anti_join(map_dat, confirmed_dat, by = "country_region")
 
 confirmed_geo <- left_join(confirmed, map_dat, by = "country_region") %>%
-  select(country_region, date, cases, categ, geom.y)
+  select(ID.x, country_region, date, cases, categ, geom.y)
 
 start_day = as.Date(recovered_dat$date[1], "%m-%d-%y")
 end_day = as.Date(recovered_dat$date[nrow(confirmed_dat)], "%m-%d-%y")
 
 
 recovered <- left_join(map_dat, recovered_dat, by = "country_region") %>%
-  complete(date = seq(start_day, end_day, by = "days"), nesting(country_region))
+  complete(date = seq(start_day, end_day, by = "days"), nesting(country_region, ID))
 
 recovered_geo <- left_join(recovered, map_dat, by = "country_region") %>%
-  select(country_region, date, cases, categ, geom.y)
+  select(ID.x, country_region, date, cases, categ, geom.y)
 
 deaths <- left_join(map_dat, deaths_dat, by = "country_region") %>%
-  complete(date = seq(start_day, end_day, by = "days"), nesting(country_region))
+  complete(date = seq(start_day, end_day, by = "days"), nesting(country_region, ID))
 
 deaths_geo <- left_join(deaths, map_dat, by = "country_region") %>%
-  select(country_region, date, cases, categ, geom.y)
+  select(ID.x, country_region, date, cases, categ, geom.y)
 
 
 # User interface ----
@@ -247,7 +244,9 @@ ui <- fluidPage(
       
       tabsetPanel(type = "tabs",
                   tabPanel("Map", plotOutput("map", width = "100%")),
+                  tabPanel("Top Ten Countries", plotOutput("topten", width = "100%")),
                   tabPanel("References", htmlOutput("datasource"), htmlOutput("colorref"), htmlOutput("others"))
+                  
                   )
       
               
@@ -262,9 +261,6 @@ server <- function(input, output) {
   ## Map output
   output$map <- renderPlot({
     
-    
-    
- 
     
     dat <- switch(input$var, 
                    "Confirmed Cases" = confirmed_geo,
@@ -300,6 +296,45 @@ server <- function(input, output) {
   },
   height = 600, width = 800
   )
+  
+  
+  ## Summary plot output
+  output$topten <- renderPlot({
+    
+    dat <- switch(input$var, 
+                  "Confirmed Cases" = confirmed_geo,
+                  "Recovered Cases" = recovered_geo,
+                  "Deaths Cases" = deaths_geo)
+    
+    color <- switch(input$var,
+                    "Confirmed Cases" = c(
+                      "0-19" = "#FFFFB2",
+                      "20-99" = "#FED976",
+                      "100-999" = "#FD8D3C",
+                      "1000-49,999" = "#F03B20",
+                      "50,000+" = "#BD0026"),
+                    
+                    "Recovered Cases" = c(
+                      "0-19" = "#D9F0A3",
+                      "20-99" = "#ADDD8E",
+                      "100-999" = "#78C679",
+                      "1000-49,999" = "#238443",
+                      "50,000+" = "#005A32"),
+                    
+                    "Deaths Cases" = c(
+                      "0-19" = "#D0D1E6",
+                      "20-99" = "#A6BDDB",
+                      "100-999" = "#67A9CF",
+                      "1000-49,999" = "#1C9099",
+                      "50,000+" = "#016C59"))
+    
+    
+    
+    top_ten(dat, input$var, input$date, color)},
+    
+    height = 800, width = 600
+    
+    )
   
   
   ## Memo output

@@ -44,11 +44,9 @@ clean_coviddat <- function(dat){
 # Helper Function: map covid 19 data ----
 ## args:
 ## dat: dataset to map (confirmed cases, deaths cases, recovered cases)
-## color: color of the data points (confirmed, deaths, recovered)
-## size: size of the data points (confirmed, deaths, recovered)
+## date_input: which date of data to display
 ## legend_title: title of the legend
-## start: starting date
-## end: ending date
+## color: which set of colors to use for fill
 
 covid_map <- function(dat, date_input, legend_title, color) {
       
@@ -108,4 +106,88 @@ covid_map <- function(dat, date_input, legend_title, color) {
 
 
 
+
+
+
+
+# Helper Function: barplot for the top 10 countries with most cases ----
+## args:
+## dat: dataset to map (confirmed cases, deaths cases, recovered cases)
+## title: title of the plot
+## date_input: which date of data to display
+## color: which set of colors to use for fill
+
+top_ten <- function(dat, title_input, date_input, color){
+  ## Filter date to find the given date
+  ## also get the top ten countries with most cases
+  plot_dat <- dat[dat$date == date_input, ] %>%
+    filter(cases > 0) %>%
+    arrange(desc(cases))
+  
+  if(nrow(plot_dat) < 10){
+    top_countries = plot_dat
+  }else{
+    top_countries = plot_dat[1:10,]
+  }
+  
+  
+  plot_title = paste("Top 10 Countries with Most ", title_input, sep = "")
+
+  
+  ggplot(top_countries, aes(x = reorder(ID.x, cases), y = cases)) + 
+    
+    geom_bar(aes(fill = categ), 
+             stat = "identity", 
+             show.legend = FALSE) + 
+    
+    geom_text(aes(label = cases), 
+              position = position_dodge(width = 0.9),
+              hjust = 1,
+              color = "#d1c0df",
+              size = 5,
+              fontface = "bold") + 
+    
+    scale_fill_manual(values = color) + 
+    
+    coord_flip() +
+    
+    labs(title = plot_title, 
+         x = "Country", 
+         y = "Number of Cases",
+         caption = "Only display countries with at least 1 case.") + 
+    
+    theme_minimal() + 
+    
+    theme(
+      
+      ### Plot ###
+      plot.background = element_blank(),
+      
+      plot.title = element_text(face = "bold",
+                                size = 24,
+                                hjust = 0,
+                                vjust = 1),
+      
+      ### Panel ###
+      panel.grid.major.y = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      
+      
+      ### Axis ###
+      
+      axis.text = element_text(face = "bold", 
+                               size = 10),
+      
+      axis.title = element_text(face = "bold",
+                                size = 12)
+      
+     
+      
+    )
+    
+  
+    
+  
+  
+}
 

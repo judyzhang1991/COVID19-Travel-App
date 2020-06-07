@@ -269,25 +269,25 @@ server <- function(input, output) {
     
     color <- switch(input$var,
                     "Confirmed Cases" = c(
-                      "0-19" = "#FFFFB2",
-                      "20-99" = "#FED976",
-                      "100-999" = "#FD8D3C",
-                      "1000-49,999" = "#F03B20",
-                      "50,000+" = "#BD0026"),
+                      "0-199" = "#FFFFB2",
+                      "200-999" = "#FED976",
+                      "1,000-9,999" = "#FD8D3C",
+                      "10,000-499,999" = "#F03B20",
+                      "500,000+" = "#BD0026"),
                     
                     "Recovered Cases" = c(
-                      "0-19" = "#D9F0A3",
-                      "20-99" = "#ADDD8E",
-                      "100-999" = "#78C679",
-                      "1000-49,999" = "#238443",
-                      "50,000+" = "#005A32"),
+                      "0-199" = "#D9F0A3",
+                      "200-999" = "#ADDD8E",
+                      "1,000-9,999" = "#78C679",
+                      "10,000-499,999" = "#238443",
+                      "500,000+" = "#005A32"),
                     
                     "Deaths Cases" = c(
-                      "0-19" = "#D0D1E6",
-                      "20-99" = "#A6BDDB",
-                      "100-999" = "#67A9CF",
-                      "1000-49,999" = "#1C9099",
-                      "50,000+" = "#016C59"))
+                      "0-199" = "#D0D1E6",
+                      "200-999" = "#A6BDDB",
+                      "1,000-9,999" = "#67A9CF",
+                      "10,000-499,999" = "#1C9099",
+                      "500,000+" = "#016C59"))
 
    
     covid_map(dat, input$date, input$var, color)
@@ -308,25 +308,26 @@ server <- function(input, output) {
     
     color <- switch(input$var,
                     "Confirmed Cases" = c(
-                      "0-19" = "#FFFFB2",
-                      "20-99" = "#FED976",
-                      "100-999" = "#FD8D3C",
-                      "1000-49,999" = "#F03B20",
-                      "50,000+" = "#BD0026"),
+                      "0-199" = "#FFFFB2",
+                      "200-999" = "#FED976",
+                      "1,000-9,999" = "#FD8D3C",
+                      "10,000-499,999" = "#F03B20",
+                      "500,000+" = "#BD0026"),
                     
                     "Recovered Cases" = c(
-                      "0-19" = "#D9F0A3",
-                      "20-99" = "#ADDD8E",
-                      "100-999" = "#78C679",
-                      "1000-49,999" = "#238443",
-                      "50,000+" = "#005A32"),
+                      "0-199" = "#D9F0A3",
+                      "200-999" = "#ADDD8E",
+                      "1,000-9,999" = "#78C679",
+                      "10,000-499,999" = "#238443",
+                      "500,000+" = "#005A32"),
                     
                     "Deaths Cases" = c(
-                      "0-19" = "#D0D1E6",
-                      "20-99" = "#A6BDDB",
-                      "100-999" = "#67A9CF",
-                      "1000-49,999" = "#1C9099",
-                      "50,000+" = "#016C59"))
+                      "0-199" = "#D0D1E6",
+                      "200-999" = "#A6BDDB",
+                      "1,000-9,999" = "#67A9CF",
+                      "10,000-499,999" = "#1C9099",
+                      "500,000+" = "#016C59"))
+    
     
     
     
@@ -350,7 +351,9 @@ server <- function(input, output) {
     
               COVID 19 Data for Deaths Cases:  time_series_covid19_deaths_global.csv </p>
               
-              <p>2.Map datasets used in this project come from the R package, {maps}.</p>")
+              <p>2.Map datasets used in this project come from the R package, {maps}.</p>
+         
+              <p>Note: COVID 19 data for confirmed cases, recovered cases, and deaths cases are cumulative.")
     
     
   })

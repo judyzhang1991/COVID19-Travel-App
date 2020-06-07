@@ -5,8 +5,7 @@
 ## helpers.R ##
 
 
-# Cutoffs based on the number of cases
-val_breaks <- c(1, 20 , 100, 1000, 50000)
+
 
 
 # Helper Function: clean covid data, group by country region and make it tidy ----
@@ -28,11 +27,11 @@ clean_coviddat <- function(dat){
       date = as.Date(str_replace_all(str_replace(date, "x", ""), "_", "-"), "%m-%d-%y"),
       country_region = tolower(country_region),
       categ = case_when(
-        cases >= 0 & cases <= 19 ~ "0-19",
-        cases >= 20 & cases <= 99 ~ "20-99",
-        cases >= 100 & cases <= 999 ~ "100-999",
-        cases >= 1000 & cases <= 49999 ~ "1000-49,999",
-        cases >= 50000 ~ "50,000+"
+        cases >= 0 & cases <= 199 ~ "0-199",
+        cases >= 200 & cases <= 999 ~ "200-999",
+        cases >= 100 & cases <= 9999 ~ "1,000-9,999",
+        cases >= 10000 & cases <= 499999 ~ "10,000-499,999",
+        cases >= 500000 ~ "500,000+"
       )
     )
 }
@@ -56,11 +55,11 @@ covid_map <- function(dat, date_input, legend_title, color) {
       plot_dat <- dat[dat$date == date_input, ]
       
       plot_dat$categ = factor(plot_dat$categ, 
-                              levels = c("0-19",
-                                         "20-99",
-                                         "100-999",
-                                         "1000-49,999",
-                                         "50,000+"))
+                              levels = c("0-199",
+                                         "200-999",
+                                         "1,000-9,999",
+                                         "10,000-499,999",
+                                         "500,000+"))
 
       ggplot(plot_dat) +
         

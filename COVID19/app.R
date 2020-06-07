@@ -333,7 +333,7 @@ server <- function(input, output) {
     
     top_ten(dat, input$var, input$date, color)},
     
-    height = 800, width = 600
+    height = 800, width = 1000
     
     )
   

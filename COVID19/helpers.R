@@ -121,7 +121,13 @@ top_ten <- function(dat, title_input, date_input, color){
   ## also get the top ten countries with most cases
   plot_dat <- dat[dat$date == date_input, ] %>%
     filter(cases > 0) %>%
-    arrange(desc(cases))
+    arrange(desc(cases)) %>%
+    mutate(
+      hjust_val = case_when(
+        cases < 10000 ~ 0,
+        cases >= 10000 ~ 1
+      )
+    )
   
   if(nrow(plot_dat) < 10){
     top_countries = plot_dat
@@ -132,6 +138,7 @@ top_ten <- function(dat, title_input, date_input, color){
   
   plot_title = paste("Top 10 Countries with Most ", title_input, sep = "")
 
+ 
   
   ggplot(top_countries, aes(x = reorder(ID.x, cases), y = cases)) + 
     
@@ -139,9 +146,11 @@ top_ten <- function(dat, title_input, date_input, color){
              stat = "identity", 
              show.legend = FALSE) + 
     
-    geom_text(aes(label = cases), 
+    geom_text(aes(label = prettyNum(cases, 
+                                    big.mark=",",
+                                    scientific=FALSE),
+                  hjust = hjust_val), 
               position = position_dodge(width = 0.9),
-              hjust = 1,
               color = "#d1c0df",
               size = 5,
               fontface = "bold") + 

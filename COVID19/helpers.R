@@ -29,7 +29,7 @@ clean_coviddat <- function(dat){
       categ = case_when(
         cases >= 0 & cases <= 199 ~ "0-199",
         cases >= 200 & cases <= 999 ~ "200-999",
-        cases >= 100 & cases <= 9999 ~ "1,000-9,999",
+        cases >= 1000 & cases <= 9999 ~ "1,000-9,999",
         cases >= 10000 & cases <= 499999 ~ "10,000-499,999",
         cases >= 500000 ~ "500,000+"
       )

@@ -26,4 +26,5 @@ https://www.kaggle.com/open-flights/flight-route-database
 https://ourworldindata.org/policy-responses-covid
 https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/timeseries/c8_internationaltravel.csv
 
-8. 
+8. High Risk Regions:
+https://www.cdc.gov/coronavirus/2019-ncov/travelers/from-other-countries.html

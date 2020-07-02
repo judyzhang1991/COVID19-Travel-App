@@ -31,6 +31,8 @@ library(shinyWidgets)
 
 library(RCurl)
 
+library(lubridate)
+
 
 # Source helper functions -----
 source("map_covid.R")
@@ -192,8 +194,8 @@ server <- function(input, output) {
     covid_map <- covid_map(dat_geo_categ, input$var, color)
     
     
-    plot_routes(direct_routes, input$country, covid_map, input$inout)
-    
+    plot_routes(direct_routes, travel_rest_dat, input$country, covid_map, input$inout, input$date)
+ 
     
     
   },

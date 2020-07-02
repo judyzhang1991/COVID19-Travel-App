@@ -27,6 +27,15 @@ travel_rest_dat <- travel_rest_dat %>%
 
 
 
+## HIGH RISK REGIONS DATA ##
+## Source: https://www.cdc.gov/coronavirus/2019-ncov/travelers/from-other-countries.html
+high_risk <- c("China", "Iran", "Austria", "Belgium", "Czech Republic", "Denmark", "Estonia", "Finland",
+               "France", "Germany", "Greece", "Hungary", "Iceland", "Italy", "Latvia", "Liechtenstein", "Lithuania", 
+               "Luxembourg", "Malta", "Netherlands", "Norway", "Poland", "Portugal", "Slovakia", "Slovenia", "Spain", 
+               "Sweden", "Switzerland", "Monaco", "San Marino", "Vatican City",
+               "United Kingdom", "Ireland", "Brazil")
+
+
 ## FLIGHT ROUTES DATA ##
 ## Source: https://www.kaggle.com/open-flights/flight-route-database
 routes <- read_csv("data/routes.csv") %>%
@@ -107,30 +116,51 @@ for(i in 1:nrow(travel_rest_dat)){
 check_travel_rest <- function(travel_rest_dat, country_name, date_str){
   rest_status <- travel_rest_dat %>%
     filter(country == country_name & date == date_str)
-  
+  print(as.double(rest_status$restriction))
   return(as.double(rest_status$restriction))
 }
 
 
 # Helper Function: update flight routes information according to the travel restriction status----
 ## args:
-## flight_dat: flight routes data,
+## direct_routes_dat: direct flight routes data,
 ## travel_rest_dat: travel restriction dataset
 ## country_name: country of interest
 ## date_str: date of interest
 ## return
 ## updated_flight_dat: updated flight routes data
 
-update_flight <- function(flight_dat, travel_rest_dat, country_name, date_str){
+update_flight <- function(direct_routes_dat, travel_rest_dat, country_name, date_str){
   
   travel_rest_status <- check_travel_rest(travel_rest_dat, country_name, date_str)
-  if(travel_rest_status == 4){
+  
+  
+  if(!is.na(travel_rest_status)){
     
-    # If travel restriction = 4: total border closure, then remove all flights into given country
-    flight_dat <- flight_dat[!(flight_dat$dest_country == country_name),]
+    # If travel restriction = 3: ban on high risk regions, then remove all flights into/out of high risk countries
+    if(travel_rest_status == 3){
+      for(i in 1 : length(high_risk)){
+        direct_routes_dat <- direct_routes_dat[!(direct_routes_dat$dest_country == high_risk[i] | direct_routes_dat$source_country == high_risk[i]),]
+      }
+      
+    }
+    else{
+      
+      if(travel_rest_status == 4){
+        
+        print("ENTER")
+        
+        # If travel restriction = 4: total border closure, then remove all flights into/out of  the given country
+        direct_routes_dat <- direct_routes_dat[!(direct_routes_dat$dest_country == country_name | direct_routes_dat$source_country == country_name),]
+      }
+      
+    }
+    
   }
   
-  return(flight_dat)
+  print(nrow(direct_routes_dat))
+  
+  return(direct_routes_dat)
   
 }
 
@@ -365,28 +395,33 @@ rownames(countries_geo) <- countries_geo$country
 ## return:
 ## NULL
 
-plot_routes <- function(direct_routes, country_name, world_map, InOut){
+plot_routes <- function(direct_routes, travel_rest_dat, country_name, world_map, InOut, date_str){
   
   if(InOut == "Out"){
-    direct_routes <- direct_routes %>% filter(source_country == country_name)
+    routes <- direct_routes %>% filter(source_country == country_name)
     
     curve_color = "#16a085"
     
     dot_color = "#7303fc"
   }
   else{
-    direct_routes <- direct_routes %>% filter(dest_country == country_name)
+    routes <- direct_routes %>% filter(dest_country == country_name)
     
     curve_color = "#490e60"
     
     dot_color = "#7303fc"
   }
   
+  # Update direct routes data with travel policy
+  routes <- update_flight(routes, travel_rest_dat, country_name, date_str)
+  if(nrow(routes) == 0){
+    world_map
+  }else{
   
   
   flights <- data.frame(
-    origin = direct_routes$source_country,
-    destination = direct_routes$dest_country
+    origin = routes$source_country,
+    destination = routes$dest_country
   ) 
   
   # Convert to network
@@ -461,7 +496,7 @@ plot_routes <- function(direct_routes, country_name, world_map, InOut){
     
     )
   
-  
+  }
 }
 
 

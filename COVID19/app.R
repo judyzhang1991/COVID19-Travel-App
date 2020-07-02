@@ -190,17 +190,56 @@ server <- function(input, output) {
                       "1,000-9,999" = "#67A9CF",
                       "10,000-499,999" = "#1C9099",
                       "500,000+" = "#016C59"))
+<<<<<<< HEAD
+=======
+    
+    
+>>>>>>> f57b826df00fda7db57c6f53c546f4c36dc165b4
     
     covid_map <- covid_map(dat_geo_categ, input$var, color)
     
     
+<<<<<<< HEAD
     plot_routes(direct_routes, travel_rest_dat, input$country, covid_map, input$inout, input$date)
  
+=======
+    height = 800, width = 1000
+>>>>>>> f57b826df00fda7db57c6f53c546f4c36dc165b4
     
     
+<<<<<<< HEAD
   },
   height = 600, width = 800
   )
+=======
+             <p>1. COVID19 datasets used in this project come from Johns Hopkins CSSE's github repository: <br/>
+             
+              COVID 19 Data for Confirmed Cases: time_series_covid19_confirmed_global.csv <br/>
+    
+              COVID 19 Data for Recovered Cases: time_series_covid19_recovered_global.csv <br/>
+    
+              COVID 19 Data for Deaths Cases:  time_series_covid19_deaths_global.csv </p>
+              
+              <p>2.Map datasets used in this project come from the R package, {maps}.</p>
+         
+              <p>Note: COVID 19 data for confirmed cases, recovered cases, and deaths cases are cumulative.")
+    
+    
+  })
+  
+  output$colorref <-renderUI({
+    HTML("<strong>Color References: </strong><br/>
+    
+    <p>1. Colors used in this project were inspired by colors used in the following graphics found in <a href = 'https://ourworldindata.org/smoking'>Our World in Data</a>: <br/>
+    
+    Colors for Confirmed Cases: Death Rate From Smoking <br/>
+    
+    Colors for Recovered Cases: Taxes as a Share of Cigarette Price <br/>
+    
+    Colors for Deaths Cases: Average Price of a Pack of Cigarettes</p>")
+  })
+  
+>>>>>>> f57b826df00fda7db57c6f53c546f4c36dc165b4
   
 
  

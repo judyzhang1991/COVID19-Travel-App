@@ -1,0 +1,296 @@
+---
+title: "COVID19 Analysis"
+author: "Jingyang(Judy) Zhang"
+date: "7/13/2020"
+output: html_document
+---
+
+# Load Packages
+```{r}
+library(tidyverse)
+library(readr)
+library(janitor)
+```
+
+# Load Source Files
+```{r}
+source("map_covid.R")
+```
+
+
+# Load data
+
+## BORDERING COUNTRY DATA ##
+```{r}
+borders_url <- url("https://raw.githubusercontent.com/geodatasource/country-borders/master/GEODATASOURCE-COUNTRY-BORDERS.CSV")
+
+borders <- read_csv(borders_url) %>% clean_names()
+```
+
+
+## COVID19 DATA ##
+```{r}
+date_str <- "05-22-2020"
+
+covid19 <- getDat(date_str) %>% clean_coviddat()
+```
+
+
+## Data Manipulation ##
+Match country names in borders to country names in covid19
+```{r}
+borders_countries <- tolower(unique(borders$country_name))
+
+covid19_countries <- covid19$country_region
+
+sort(setdiff(borders_countries, covid19_countries))
+
+# aland islands: not in covid19
+# american samoa: not in covid19
+# anguilla: not in covid19
+# antarctica: not in covid19
+# aruba: not in covid19
+# bermuda: not in covid19
+# bolivia (plurinational state of): bolivia in covid19
+borders$country_name[tolower(borders$country_name) == "bolivia (plurinational state of)"] <- "bolivia"
+
+# bonaire, sint eustatius and saba: not in covid19
+# bouvet island: not in covid19
+# british indian ocean territory: not in covid19
+# brunei darussalam: brunei in covid19
+borders$country_name[tolower(borders$country_name) == "brunei darussalam"] <- "brunei"
+
+# cayman islands: not in covid19
+# christmas island: not in covid19
+# cocos (keeling) islands: not in covid19
+# congo: congo (brazzaville) in covid19
+borders$country_name[tolower(borders$country_name) == "congo"] <- "congo (brazzaville)"
+
+# congo (the democratic republic of the): congo (kinshasa) in covid19
+borders$country_name[tolower(borders$country_name) == "congo (the democratic republic of the)"] <- "congo (kinshasa)"
+
+# cook islands: not in covid19
+# cote d’ivoire: cote d'ivoire in covid19
+borders$country_name[tolower(borders$country_name) == "cote d’ivoire"] <- "cote d'ivoire"
+
+# curacao: not in covid19
+# falkland islands (malvinas): not in covid19
+# faroe islands: not in covid19
+# french guiana: not in covid19
+# french polynesia: not in covid19
+# french southern territories: not in covid19
+# gambia (the): gambia in covid19
+borders$country_name[tolower(borders$country_name) == "gambia (the)"] <- "gambia"
+# gibraltar: not in covid19
+# greenland: not in covid19
+# guadeloupe: not in covid19
+# guam: not in covid19
+# guernsey: not in covid19
+# heard island and mcdonald islands: not in covid19
+# hong kong: not in covid19
+# iran (islamic republic of): iran in covid19
+borders$country_name[tolower(borders$country_name) == "iran (islamic republic of)"] <- "iran"
+# isle of man: not in covid19
+# jersey: not in covid19
+# kiribati: not in covid19
+# korea (democratic people's republic of): korea, south in covid19
+borders$country_name[tolower(borders$country_name) == "korea (democratic people's republic of)"] <- "korea, south"
+# korea (the republic of): not in covid19
+# lao people's democratic republic: laos in covid19
+borders$country_name[tolower(borders$country_name) == "lao people's democratic republic"] <- "laos"
+# macao: not in covid19
+# marshall islands: not in covid19
+# martinique: not in covid19
+# mayotte:
+# micronesia (federated states of):
+# moldova (the republic of): 
+# montserrat:
+# myanmar:
+# nauru:
+# new caledonia:
+# niue:
+# norfolk island:
+# northern mariana islands:
+# palau: 
+# palestine, state of:
+# pitcairn:
+# puerto rico:
+# reunion:
+# russian federation:
+# saint barthelemy:
+# saint helena,\"ascension and tristan da cunha:
+# saint martin (french part):
+# saint pierre and miquelon:
+# samoa:
+# sint maarten (dutch part):
+# solomon islands:
+# south georgia and the south sandwich islands:
+# svalbard and jan mayen:
+# syrian arab republic:
+# taiwan (province of china): not in covid19
+# tanzania (the united republic of): tanzania in covid19
+borders$country_name[tolower(borders$country_name) == "tanzania (the united republic of)"] <- "tanzania"
+# tokelau: not in covid19
+# tonga: not in covid19
+# turkmenistan: not in covid19
+# turks and caicos islands: not in covid19
+# tuvalu: not in covid19
+# united kingdom of great britain and northern ireland: not in covid19
+# united states minor outlying islands: not in covid19
+# united states of america: us in covid19
+borders$country_name[tolower(borders$country_name) == "united states of america"] <- "us"
+# vanuatu: not in covid19
+# venezuela (bolivarian republic of): venezuela in covid19
+borders$country_name[tolower(borders$country_name) == "venezuela (bolivarian republic of)"] <- "venezuela"
+# viet nam: vietname in covid19
+borders$country_name[tolower(borders$country_name) == "viet nam"] <- "vietnam"
+# virgin islands (british): not in covid19
+# virgin islands (u.s.): not in covid19
+# wallis and futuna: not in covid19
+
+
+
+```
+
+
+
+
+## Create Connectivity Matrix (Weight Matrix) ##
+
+Use binary connectivity matrix (i.e. adjacency weights) with $w_{ij} = 1$ if country $i$ and country $j$ share any portion of their borders with another.
+
+We will build the matrix using the `borders` dataset.
+
+## Function: get_borders
+## Gets border countries of a given country
+## Arg: 
+## borders: dataset containing border information
+## country: country of interest
+## Return: list of countries that share border with the given country
+```{r}
+get_borders <- function(borders, country){
+  border_countries <- borders %>% filter(country_name == country)
+  
+  border_countries <- border_countries$country_border_name
+  
+  return(border_countries)
+}
+
+```
+
+
+```{r}
+countries <- unique(borders$country_name)
+
+connect_matrx <- matrix(data = NA, nrow = length(countries), ncol = length(countries))
+
+colnames(connect_matrx) <- countries
+
+for(i in 1 : nrow(connect_matrx)){
+  for(j in 1 : ncol(connect_matrx)){
+    connect_matrx[i, j] <- countries[i]
+  }
+}
+
+
+
+
+```
+
+
+
+## Function: get_connect
+## Creates a connect matrix using information from the borders dataset
+## Arg: 
+## borders: dataset containing border information
+## Return: a connectivity matrix 
+
+```{r}
+get_connect <- function(borders){
+  # Get list of unique countries 
+  countries <- unique(borders$country_name)
+  # Create an empty connect matrix
+  connect_matrx <- matrix(data = NA, nrow = length(countries), ncol = length(countries))
+  colnames(connect_matrx) <- countries
+  rownames(connect_matrx) <- countries
+  
+  # Get border information of every country in the countries list
+  for(i in 1 : length(countries)){
+    country <- countries[i]
+    border_countries <- get_borders(borders, country)
+    if(is.na(border_countries)){
+      next
+    }
+    else{
+      
+    if(length(border_countries) > 1){
+      for(j in 1 : length(border_countries)){
+        connect_matrx[border_countries[j], country] <- 1
+      }
+    }
+    else{
+      connect_matrx[border_countries, country] <- 1
+    }
+      
+    }
+    
+  }
+  
+  # Replace all NA with 0s
+  connect_matrx[is.na(connect_matrx)] <- 0
+  
+  return(connect_matrx)
+  
+  
+}
+
+
+
+# Get connectivity matrix
+connect_matrx <- get_connect(borders)
+
+```
+
+
+
+## Calculate Variance of Attribute Values ##
+
+```{r}
+attr_vals <- covid19$total_confirmed
+
+var_attr <- var(attr_vals)
+
+## HAND CALCULATION
+#n <- length(attr_vals)
+#mean_attr <- mean(attr_vals)
+#s2_attr <- (1 / (n - 1)) * sum((attr_vals - mean_attr)^2)
+```
+
+
+## Calculate Mean of Attribute Values ##
+```{r}
+n <- length(attr_vals)
+mean_attr <- mean(attr_vals)
+```
+
+
+## Calculate Sum of Weights, $w_{..}$ ##
+
+```{r}
+sum_weights <- sum(connect_matrx)
+```
+
+
+
+
+### Caculate Moran's I ###
+```{r}
+
+for(i in 1 : nrow(connect_matrx)){
+  for(j in 1: ncol(connect_matrx)){
+    
+  }
+}
+
+```
+

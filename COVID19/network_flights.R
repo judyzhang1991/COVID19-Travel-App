@@ -66,6 +66,8 @@ for(i in 1:nrow(airports)){
 }
 
 
+
+
 # Helper Function: convert date from the form 01jan2020 to 01-01-2020 ----
 ## args:
 ## date: string of date in the form of 01jan2020
@@ -92,9 +94,7 @@ format_date_str <- function(date){
 
 # Reformat date column in travel restriction data
 
-for(i in 1:nrow(travel_rest_dat)){
-  travel_rest_dat$date[i] <- format_date_str(travel_rest_dat$date[i])
-}
+travel_rest_dat$date <- apply(travel_rest_dat[,2], MARGIN = 1, FUN = format_date_str)
 
 
 
@@ -148,7 +148,6 @@ update_flight <- function(direct_routes_dat, travel_rest_dat, country_name, date
       
       if(travel_rest_status == 4){
         
-        print("ENTER")
         
         # If travel restriction = 4: total border closure, then remove all flights into/out of  the given country
         direct_routes_dat <- direct_routes_dat[!(direct_routes_dat$dest_country == country_name | direct_routes_dat$source_country == country_name),]
@@ -158,7 +157,7 @@ update_flight <- function(direct_routes_dat, travel_rest_dat, country_name, date
     
   }
   
-  print(nrow(direct_routes_dat))
+  #print(nrow(direct_routes_dat))
   
   return(direct_routes_dat)
   
@@ -323,21 +322,25 @@ assign_country_geo <- function(direct_routes, country_name){
     filter(source_country == country_name | dest_country == country_name)
   
   source_airports_dat <- all_airports %>% 
-    filter(source_country == country_name)
-  
-  source_airports_lat_total <- sum(source_airports_dat$source_airport_lat)
-  source_airports_long_total <- sum(source_airports_dat$source_airport_long)
-  source_airports_n <- nrow(source_airports_dat)
+    filter(source_country == country_name) %>%
+    select(source_airport, source_airport_lat, source_airport_long) %>%
+    rename(c( "airport" = "source_airport", 
+             "lat" = "source_airport_lat" ,
+             "long" = "source_airport_long"))
   
   dest_airports_dat <- all_airports %>% 
-    filter(dest_country == country_name)
+    filter(dest_country == country_name) %>%
+    select(destination_airport, dest_airport_lat, dest_airport_long) %>%
+    rename(c( "airport" = "destination_airport", 
+              "lat" = "dest_airport_lat" ,
+              "long" = "dest_airport_long"))
   
-  dest_airports_lat_total <- sum(dest_airports_dat$dest_airport_lat)
-  dest_airports_long_total <- sum(dest_airports_dat$dest_airport_long)
-  dest_airports_n <- nrow(dest_airports_dat)
+  airports_distinct <- rbind(source_airports_dat, dest_airports_dat) %>%
+    distinct()
   
-  country_lat <- sum(source_airports_lat_total, dest_airports_lat_total) / (source_airports_n + dest_airports_n)
-  country_long <- sum(source_airports_long_total, dest_airports_long_total) / (source_airports_n + dest_airports_n)
+  
+  country_lat <- mean(airports_distinct$lat)
+  country_long <- mean(airports_distinct$long)
   
   return(c(country_lat, country_long))
 }
@@ -412,8 +415,27 @@ plot_routes <- function(direct_routes, travel_rest_dat, country_name, world_map,
     dot_color = "#7303fc"
   }
   
+  
+  travel_rest_status <- check_travel_rest(travel_rest_dat, country_name, date_str)
+  
+  if(!is.na(travel_rest_status)){
+    if(travel_rest_status == 2){
+      line_type = "dashed"
+    }
+    else{
+      line_type = "solid"
+    }
+  }
+  else{
+    line_type = "solid"
+  }
+  
+  #print(line_type)
+  
+  
   # Update direct routes data with travel policy
   routes <- update_flight(routes, travel_rest_dat, country_name, date_str)
+  
   if(nrow(routes) == 0){
     world_map
   }else{
@@ -468,7 +490,8 @@ plot_routes <- function(direct_routes, travel_rest_dat, country_name, world_map,
       data = edges_mat, 
       mapping = aes(x = x, xend = xend, y = y, yend = yend), 
       arrow = arrow(length = unit(0.02, "npc")),
-      color = curve_color
+      color = curve_color,
+      linetype = line_type
     ) + 
     theme_minimal() + 
     theme(

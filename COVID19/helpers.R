@@ -1,8 +1,10 @@
-## STAT302 ##
-## Final Project ##
+## Covid 19 and Travel Visualization ##
 ## Jingyang Zhang ##
 ## May 20th, 2020 ##
 ## helpers.R ##
+## This R script includes helper functions that pre-process data that will be 
+## used in the visualization. 
+## This file is deprecated. 
 
 
 
@@ -198,4 +200,5 @@ top_ten <- function(dat, title_input, date_input, color){
   
   
 }
+
 

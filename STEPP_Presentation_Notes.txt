@@ -1,0 +1,5 @@
+1. Per million people/ Per capita
+2. Density measure: number of people per square ft
+3. Compare simple model (without spatial or network components) vs complex model (with spatial and network),
+ what does new methodology provide?
+4. Compare within country (free travel - effect of abs. distance) and between country (no free travel - effect of travel network)

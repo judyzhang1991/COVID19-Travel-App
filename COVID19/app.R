@@ -1,3 +1,14 @@
+## Covid 19 and Travel Visualization ##
+## Jingyang Zhang ##
+## May 20th, 2020 ##
+## app.R ##
+## This R script is the main file for running the application to create an interactive 
+## visualization of covid 19 cases and air travel over time.
+
+
+
+
+
 
 # Load packages ----
 
@@ -85,7 +96,7 @@ ui <- fluidPage(
                    label = "Flight out of/Flight into",
                    choices = list("Flight out of" = "Out",
                                   "Flight into" = "In"),
-                   selected = "Out"),
+                   selected = "In"),
       
       # Dropdown widget so user can select a country
       selectInput("country", 

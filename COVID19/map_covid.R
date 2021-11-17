@@ -1,8 +1,11 @@
-## STAT302 ##
-## Final Project ##
+## Covid 19 and Travel Visualization ##
 ## Jingyang Zhang ##
 ## May 20th, 2020 ##
 ## map_covid.R ##
+## This R script will create a covid 19 cases heat map with the *latest* data available. 
+
+
+
 
 
 

@@ -10,6 +10,7 @@ output: html_document
 library(tidyverse)
 library(readr)
 library(janitor)
+library(wbstats)
 ```
 
 # Load Source Files
@@ -54,11 +55,14 @@ sort(setdiff(borders_countries, covid19_countries))
 # bolivia (plurinational state of): bolivia in covid19
 borders$country_name[tolower(borders$country_name) == "bolivia (plurinational state of)"] <- "bolivia"
 
+borders$country_border_name[tolower(borders$country_border_name) == "bolivia (plurinational state of)"] <- "bolivia"
+
 # bonaire, sint eustatius and saba: not in covid19
 # bouvet island: not in covid19
 # british indian ocean territory: not in covid19
 # brunei darussalam: brunei in covid19
 borders$country_name[tolower(borders$country_name) == "brunei darussalam"] <- "brunei"
+borders$country_border_name[tolower(borders$country_border_name) == "brunei darussalam"] <- "brunei"
 
 # cayman islands: not in covid19
 # christmas island: not in covid19
@@ -66,12 +70,17 @@ borders$country_name[tolower(borders$country_name) == "brunei darussalam"] <- "b
 # congo: congo (brazzaville) in covid19
 borders$country_name[tolower(borders$country_name) == "congo"] <- "congo (brazzaville)"
 
+borders$country_border_name[tolower(borders$country_border_name) == "congo"] <- "congo (brazzaville)"
+
 # congo (the democratic republic of the): congo (kinshasa) in covid19
 borders$country_name[tolower(borders$country_name) == "congo (the democratic republic of the)"] <- "congo (kinshasa)"
 
+borders$country_border_name[tolower(borders$country_border_name) == "congo (the democratic republic of the)"] <- "congo (kinshasa)"
 # cook islands: not in covid19
 # cote d’ivoire: cote d'ivoire in covid19
 borders$country_name[tolower(borders$country_name) == "cote d’ivoire"] <- "cote d'ivoire"
+
+borders$country_border_name[tolower(borders$country_border_name) == "cote d’ivoire"] <- "cote d'ivoire"
 
 # curacao: not in covid19
 # falkland islands (malvinas): not in covid19
@@ -81,6 +90,8 @@ borders$country_name[tolower(borders$country_name) == "cote d’ivoire"] <- "cot
 # french southern territories: not in covid19
 # gambia (the): gambia in covid19
 borders$country_name[tolower(borders$country_name) == "gambia (the)"] <- "gambia"
+
+borders$country_border_name[tolower(borders$country_border_name) == "gambia (the)"] <- "gambia"
 # gibraltar: not in covid19
 # greenland: not in covid19
 # guadeloupe: not in covid19
@@ -90,46 +101,66 @@ borders$country_name[tolower(borders$country_name) == "gambia (the)"] <- "gambia
 # hong kong: not in covid19
 # iran (islamic republic of): iran in covid19
 borders$country_name[tolower(borders$country_name) == "iran (islamic republic of)"] <- "iran"
+
+borders$country_border_name[tolower(borders$country_border_name) == "iran (islamic republic of)"] <- "iran"
 # isle of man: not in covid19
 # jersey: not in covid19
 # kiribati: not in covid19
 # korea (democratic people's republic of): korea, south in covid19
 borders$country_name[tolower(borders$country_name) == "korea (democratic people's republic of)"] <- "korea, south"
+
+borders$country_border_name[tolower(borders$country_border_name) == "korea (democratic people's republic of)"] <- "korea, south"
 # korea (the republic of): not in covid19
 # lao people's democratic republic: laos in covid19
 borders$country_name[tolower(borders$country_name) == "lao people's democratic republic"] <- "laos"
+
+borders$country_border_name[tolower(borders$country_border_name) == "lao people's democratic republic"] <- "laos"
 # macao: not in covid19
 # marshall islands: not in covid19
 # martinique: not in covid19
-# mayotte:
-# micronesia (federated states of):
-# moldova (the republic of): 
-# montserrat:
-# myanmar:
-# nauru:
-# new caledonia:
-# niue:
-# norfolk island:
-# northern mariana islands:
-# palau: 
-# palestine, state of:
-# pitcairn:
-# puerto rico:
-# reunion:
-# russian federation:
-# saint barthelemy:
-# saint helena,\"ascension and tristan da cunha:
-# saint martin (french part):
-# saint pierre and miquelon:
+# mayotte: not in covid19
+# micronesia (federated states of): not in covid19
+# moldova (the republic of): moldova in covid19
+borders$country_name[tolower(borders$country_name) == "moldova (the republic of)"] <- "moldova"
+
+borders$country_border_name[tolower(borders$country_border_name) == "moldova (the republic of)"] <- "moldova"
+# montserrat: not in covid19
+# myanmar: burma in covid19
+borders$country_name[tolower(borders$country_name) == "myanmar"] <- "burma"
+
+borders$country_border_name[tolower(borders$country_border_name) == "myanmar"] <- "burma"
+# nauru: not in covid19
+# new caledonia: not in covid19
+# niue: not in covid19
+# norfolk island: not in covid19
+# northern mariana islands: not in covid19
+# palau: not in covid19
+# palestine, state of: not in covid19
+# pitcairn: not in covid19
+# puerto rico: not in covid19
+# reunion: not in covid19
+# russian federation: russia in covid19
+borders$country_name[tolower(borders$country_name) == "russian federation"] <- "russia"
+
+borders$country_border_name[tolower(borders$country_border_name) == "russian federation"] <- "russia"
+# saint barthelemy: not in covid19
+# saint helena,\"ascension and tristan da cunha: not in covid19
+# saint martin (french part): not in covid19
+# saint pierre and miquelon: not in covid19
 # samoa:
-# sint maarten (dutch part):
-# solomon islands:
-# south georgia and the south sandwich islands:
-# svalbard and jan mayen:
-# syrian arab republic:
+# sint maarten (dutch part): not in covid19
+# solomon islands: not in covid19
+# south georgia and the south sandwich islands: not in covid19
+# svalbard and jan mayen: not in covid19
+# syrian arab republic: syria in covid19
+borders$country_name[tolower(borders$country_name) == "syrian arab republic"] <- "syria"
+
+borders$country_border_name[tolower(borders$country_border_name) == "syrian arab republic"] <- "syria"
 # taiwan (province of china): not in covid19
 # tanzania (the united republic of): tanzania in covid19
 borders$country_name[tolower(borders$country_name) == "tanzania (the united republic of)"] <- "tanzania"
+
+borders$country_border_name[tolower(borders$country_border_name) == "tanzania (the united republic of)"] <- "tanzania"
 # tokelau: not in covid19
 # tonga: not in covid19
 # turkmenistan: not in covid19
@@ -139,14 +170,21 @@ borders$country_name[tolower(borders$country_name) == "tanzania (the united repu
 # united states minor outlying islands: not in covid19
 # united states of america: us in covid19
 borders$country_name[tolower(borders$country_name) == "united states of america"] <- "us"
+
+borders$country_border_name[tolower(borders$country_border_name) == "united states of america"] <- "us"
 # vanuatu: not in covid19
 # venezuela (bolivarian republic of): venezuela in covid19
 borders$country_name[tolower(borders$country_name) == "venezuela (bolivarian republic of)"] <- "venezuela"
+
+borders$country_border_name[tolower(borders$country_border_name) == "venezuela (bolivarian republic of)"] <- "venezuela"
 # viet nam: vietname in covid19
 borders$country_name[tolower(borders$country_name) == "viet nam"] <- "vietnam"
+
+borders$country_border_name[tolower(borders$country_border_name) == "viet nam"] <- "vietnam"
 # virgin islands (british): not in covid19
 # virgin islands (u.s.): not in covid19
 # wallis and futuna: not in covid19
+
 
 
 
@@ -169,9 +207,9 @@ We will build the matrix using the `borders` dataset.
 ## Return: list of countries that share border with the given country
 ```{r}
 get_borders <- function(borders, country){
-  border_countries <- borders %>% filter(country_name == country)
+  border_countries <- borders %>% filter(tolower(country_name) == tolower(country))
   
-  border_countries <- border_countries$country_border_name
+  border_countries <- tolower(border_countries$country_border_name)
   
   return(border_countries)
 }
@@ -179,23 +217,7 @@ get_borders <- function(borders, country){
 ```
 
 
-```{r}
-countries <- unique(borders$country_name)
 
-connect_matrx <- matrix(data = NA, nrow = length(countries), ncol = length(countries))
-
-colnames(connect_matrx) <- countries
-
-for(i in 1 : nrow(connect_matrx)){
-  for(j in 1 : ncol(connect_matrx)){
-    connect_matrx[i, j] <- countries[i]
-  }
-}
-
-
-
-
-```
 
 
 
@@ -208,7 +230,7 @@ for(i in 1 : nrow(connect_matrx)){
 ```{r}
 get_connect <- function(borders){
   # Get list of unique countries 
-  countries <- unique(borders$country_name)
+  countries <- tolower(unique(borders$country_name))
   # Create an empty connect matrix
   connect_matrx <- matrix(data = NA, nrow = length(countries), ncol = length(countries))
   colnames(connect_matrx) <- countries
@@ -218,6 +240,7 @@ get_connect <- function(borders){
   for(i in 1 : length(countries)){
     country <- countries[i]
     border_countries <- get_borders(borders, country)
+   
     if(is.na(border_countries)){
       next
     }
@@ -225,10 +248,12 @@ get_connect <- function(borders){
       
     if(length(border_countries) > 1){
       for(j in 1 : length(border_countries)){
+        
         connect_matrx[border_countries[j], country] <- 1
       }
     }
     else{
+     
       connect_matrx[border_countries, country] <- 1
     }
       
@@ -251,6 +276,34 @@ connect_matrx <- get_connect(borders)
 
 ```
 
+
+
+## Function: value_lookup
+## Look up value of confirmed/recovered/deaths cases of a given country
+## Arg: 
+## country: country of interest
+## covid19: covid19 dataset
+## type: which type of value to draw, confirmed, recovered, deaths
+## Return: a number of value of confirmed/recovered/deaths cases of the given county
+```{r}
+value_lookup <- function(covid19, country, type){
+  country_value <- covid19 %>% 
+    filter(tolower(country_region) == tolower(country))
+  
+  case_value <- case_when(
+    type == "confirmed" ~ country_value$total_confirmed,
+    type == "recovered" ~ country_value$total_recovered,
+    type == "deaths" ~ country_value$total_deaths
+  )
+  
+  if(length(case_value) == 0){
+    case_value <- 0
+  }
+  
+  return(case_value)
+  
+}
+```
 
 
 ## Calculate Variance of Attribute Values ##
@@ -284,13 +337,176 @@ sum_weights <- sum(connect_matrx)
 
 
 ### Caculate Moran's I ###
+$I = \frac{n}{(n-1)S^{2}w_{..}}\sum_{i=1}^{n}\sum_{j=1}^{n}[(Z(s_{i})-\bar{Z})(Z(s_{j})-\bar{Z})]$
 ```{r}
-
+type <- "confirmed"
+weighted <- c()
 for(i in 1 : nrow(connect_matrx)){
-  for(j in 1: ncol(connect_matrx)){
+  for(j in 1: nrow(connect_matrx)){
+    si <- rownames(connect_matrx)[i]
+    sj <- rownames(connect_matrx)[j]
+    zsi <- value_lookup(covid19, si, type)
+    zsj <- value_lookup(covid19, sj, type)
+  
+    value <- connect_matrx[i, j] * (zsi - mean_attr) * (zsj - mean_attr)
+    
+    weighted[i] <- value
     
   }
 }
+
+I <- (n / ((n - 1) * var_attr * sum_weights)) * sum(weighted)
+
+```
+
+
+
+Standardize I Test Statistic:
+
+```{r}
+EI <- (-1 / (n - 1))
+
+```
+
+
+$S_{1} = \frac{1}{2}\sum_{i=1}^{n}\sum_{j=1}^{n}(w_{ij} + w_{ji})^{2}$
+
+```{r}
+#### S1 #####
+sum_ij <- c()
+for(i in 1 : nrow(connect_matrx)){
+  for(j in 1 : nrow(connect_matrx)){
+    
+    value <- (connect_matrx[i, j] + connect_matrx[j, i])^2
+    
+    sum_ij[i] <- value
+  }
+}
+
+S1 <- (1 / 2) * sum(sum_ij)
+```
+
+#### S2 #####
+
+$S_{2} = \sum_{i=1}^{n}(\sum_{j = 1}^{n}w_{ij} + \sum_{j = 1}^{n}w_{ji})^{2}$
+
+```{r}
+sum_i <- c()
+
+for(i in 1 : nrow(connect_matrx)){
+  sum_wij <- sum(connect_matrx[i,])
+  sum_wji <- sum(connect_matrx[,j])
+  
+  value <- (sum_wij + sum_wji)^2
+  sum_i[i] <- value
+  
+}
+
+S2 <- sum(sum_i)
+
+
+
+
+```
+
+
+
+#### S3 #####
+
+
+$S_{3} = \frac{n^{-1}\sum_{i = 1}^{n}(Z(s_{i})-\bar{Z})^{4}}{(n^{-1}\sum_{i=1}^{n}(Z(s_{i})-\bar{Z})^{2})^{2}}$
+
+
+```{r}
+
+sum_num <- c()
+
+for(i in 1 : nrow(connect_matrx)){
+    si <- rownames(connect_matrx)[i]
+
+    zsi <- value_lookup(covid19, si, type)
+    
+    value <- (zsi - mean_attr)^4
+  
+    sum_num[i] <- value
+  
+}
+
+
+
+sum_denom <- c()
+
+for(i in 1 : nrow(connect_matrx)){
+    si <- rownames(connect_matrx)[i]
+
+    zsi <- value_lookup(covid19, si, type)
+    
+    value <- (zsi - mean_attr)^2
+  
+    sum_denom[i] <- value
+  
+}
+
+
+S3 <- ((1 / n) * sum(sum_num)) / ((1 / n) * sum(sum_denom))^2
+
+
+```
+
+
+
+
+#### S4 #####
+
+
+$S_{4} = (n^{2} - 3n + 3)S_{1} - nS_{2} + 3w_{..}$
+
+
+```{r}
+
+S4 <- (n^2 - 3 * n + 3) * S1 - n * S2 + 3 * sum_weights^2
+
+
+```
+
+
+
+
+#### S5 #####
+
+
+$S_{5} = (n^{2} - n)S_{1} - 2nS_{2} + 6w_{..}$
+
+
+```{r}
+
+S5 <- (n^2 - n) * S1 - 2 * n * S2 + 6 * sum_weights^2
+
+
+```
+
+
+Calculate Variance of Moran's I under null distribution
+
+Var(I)$=\frac{nS_{4}-S_{3}S_{5}}{(n-1)(n-2)(n-3)w_{..}^{2}} - (E(I))^{2}$
+```{r}
+
+
+varI <- (n * S4 - S3 * S5) / (n - 1) * (n - 2) * (n - 3) * sum_weights^2 - EI^2
+
+```
+
+
+
+
+Calculate Z-score and p-value
+
+```{r}
+z_score <- (I - EI) / varI
+
+p_value <- pnorm(abs(z_score))
+
+p_value
 
 ```
 

@@ -1,3 +1,15 @@
+## Covid 19 and Travel Visualization ##
+## Jingyang Zhang ##
+## May 20th, 2020 ##
+## others.R ##
+## This R script includes helper functions that pre-process data that will be 
+## used in the visualization. 
+## This file is deprecated. 
+
+
+
+
+
 
 # Create a lookup hash table for looking up country of an airport
 airports_hash <- hash()

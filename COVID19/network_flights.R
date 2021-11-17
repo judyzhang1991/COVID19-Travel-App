@@ -1,9 +1,9 @@
-
-## COVID19 Network Spatial Visualization
-## Jingyang Zhang
-## network.R
-
-
+## Covid 19 and Travel Visualization ##
+## Jingyang Zhang ##
+## May 20th, 2020 ##
+## map_covid.R ##
+## This R script will add flight routes to the covid 19 heat map. Data of flights will be
+## updated to reflect the latest travel restriction policies.
 
 
 
